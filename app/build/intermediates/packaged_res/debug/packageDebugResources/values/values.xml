@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_clear_session">Clear session</string>
+    <string name="action_retry">Retry</string>
+    <string name="app_name">Instagram Wrapper</string>
+    <string name="content_description_settings">Open settings</string>
+    <string name="dialog_clear_cache_body">This clears WebView cache, browsing history, and local storage used by the wrapper. It does not clear cookies.</string>
+    <string name="dialog_clear_cache_title">Clear cached data</string>
+    <string name="dialog_clear_session_body">This clears WebView cookies and session data. You will need to log into Instagram again.</string>
+    <string name="dialog_clear_session_title">Clear session</string>
+    <string name="error_offline">You are offline.</string>
+    <string name="error_unable_to_load">Unable to load Instagram.</string>
+    <string name="loading_app">Loading Instagram</string>
+    <string name="settings_clear_cache">Clear cached Instagram data</string>
+    <string name="settings_clear_session">Clear Instagram session</string>
+    <string name="status_offline">Offline</string>
+    <style name="Theme.InstagramWrapper" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

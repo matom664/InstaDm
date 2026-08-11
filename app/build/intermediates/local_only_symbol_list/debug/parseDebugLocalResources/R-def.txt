@@ -1,0 +1,19 @@
+R_DEF: Internal format may change without notice
+local
+string action_cancel
+string action_clear
+string action_clear_session
+string action_retry
+string app_name
+string content_description_settings
+string dialog_clear_cache_body
+string dialog_clear_cache_title
+string dialog_clear_session_body
+string dialog_clear_session_title
+string error_offline
+string error_unable_to_load
+string loading_app
+string settings_clear_cache
+string settings_clear_session
+string status_offline
+style Theme.InstagramWrapper

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.instagramwrapper.InstagramUrlFilterTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-08-10T21:14:49" hostname="codespaces-14a71a" time="10.551">
+  <properties/>
+  <testcase name="restore url normalization upgrades instagram http links to https" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="10.331"/>
+  <testcase name="non instagram and malformed urls are rejected" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.038"/>
+  <testcase name="host case and scheme case are handled" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.039"/>
+  <testcase name="direct urls are allowed" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.032"/>
+  <testcase name="reels are blocked with and without trailing slashes or query parameters" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.035"/>
+  <testcase name="home feed is allowed" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.035"/>
+  <testcase name="explore posts and profiles are allowed" classname="com.example.instagramwrapper.InstagramUrlFilterTest" time="0.035"/>
+  <system-out><![CDATA[WARNING: No manifest file found at ./AndroidManifest.xml.
+Falling back to the Android OS resources only.
+To remove this warning, annotate your test class with @Config(manifest=Config.NONE).
+If you're using Android Gradle Plugin, add testOptions.unitTests.includeAndroidResources = true to your build.gradle
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
