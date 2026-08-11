@@ -69,7 +69,7 @@ private fun InstagramBrowserScreen() {
 
     val initialUrl by produceState(initialValue = InstagramUrlFilter.defaultHomeUrl, repository) {
         val lastViewed = runCatching { repository.lastViewedStateFlow.first() }.getOrNull()
-        value = InstagramUrlFilter.normalizeAllowedInstagramUrl(lastViewed?.url) ?: InstagramUrlFilter.defaultHomeUrl
+        value = InstagramUrlFilter.normalizeInstagramUrl(lastViewed?.url) ?: InstagramUrlFilter.defaultHomeUrl
     }
 
     var webViewState by remember {
@@ -88,6 +88,7 @@ private fun InstagramBrowserScreen() {
     var showSettingsMenu by remember { mutableStateOf(false) }
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearSessionDialog by remember { mutableStateOf(false) }
+    var blockMode by remember { mutableStateOf(BlockMode.NORMAL) }
 
     LaunchedEffect(isOnline) {
         webView?.settings?.cacheMode = if (isOnline) {
@@ -116,6 +117,7 @@ private fun InstagramBrowserScreen() {
             InstagramWebView(
                 initialUrl = initialUrl,
                 isOnline = isOnline,
+                blockMode = blockMode,
                 onStateChanged = { webViewState = it },
                 onWebViewCreated = { createdWebView -> webView = createdWebView },
                 onBlockedNavigation = {
@@ -179,6 +181,22 @@ private fun InstagramBrowserScreen() {
                 onDismissRequest = { showSettingsMenu = false },
                 properties = PopupProperties(focusable = true),
             ) {
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.settings_blocking_normal)) },
+                    onClick = {
+                        showSettingsMenu = false
+                        blockMode = BlockMode.NORMAL
+                        webView?.reload()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.settings_blocking_reels)) },
+                    onClick = {
+                        showSettingsMenu = false
+                        blockMode = BlockMode.REELS
+                        webView?.reload()
+                    },
+                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.settings_clear_cache)) },
                     onClick = {

@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 fun InstagramWebView(
     initialUrl: String,
     isOnline: Boolean,
+    blockMode: BlockMode,
     onStateChanged: (WebViewState) -> Unit,
     onWebViewCreated: (WebView) -> Unit,
     onBlockedNavigation: (String) -> Unit,
@@ -66,6 +67,7 @@ fun InstagramWebView(
     }
 
     val isOnlineState by rememberUpdatedState(isOnline)
+    val blockModeState by rememberUpdatedState(blockMode)
     val onBlockedNavigationState by rememberUpdatedState(onBlockedNavigation)
     val onPersistAllowedUrlState by rememberUpdatedState(onPersistAllowedUrl)
 
@@ -168,12 +170,12 @@ fun InstagramWebView(
                         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                             val url = request?.url?.toString() ?: return false
                             val isMainFrame = request.isForMainFrame
-                            return handleNavigation(context, view, url, isMainFrame, onBlockedNavigationState)
+                            return handleNavigation(context, view, url, isMainFrame, blockModeState, onBlockedNavigationState)
                         }
 
                         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                             val safeUrl = url ?: return false
-                            return handleNavigation(context, view, safeUrl, true, onBlockedNavigationState)
+                            return handleNavigation(context, view, safeUrl, true, blockModeState, onBlockedNavigationState)
                         }
 
                         override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
@@ -187,25 +189,28 @@ fun InstagramWebView(
                                 )
                             )
                             if (view != null) {
-                                ReelsBlocker.inject(view)
+                                ReelsBlocker.inject(view, blockModeState.blocksReels)
                             }
                         }
 
                         override fun onPageCommitVisible(view: WebView?, url: String?) {
                             if (view != null) {
-                                ReelsBlocker.inject(view)
+                                ReelsBlocker.inject(view, blockModeState.blocksReels)
                             }
                         }
 
                         override fun onPageFinished(view: WebView?, url: String?) {
                             val currentUrl = url ?: view?.url
-                            if (currentUrl != null && !InstagramUrlFilter.isBlockedInstagramUrl(currentUrl) && InstagramUrlFilter.isInstagramUrl(currentUrl)) {
+                            val isBlockedByMode = currentUrl != null &&
+                                blockModeState.blocksReels &&
+                                InstagramUrlFilter.isBlockedInstagramUrl(currentUrl)
+                            if (currentUrl != null && !isBlockedByMode && InstagramUrlFilter.isInstagramUrl(currentUrl)) {
                                 coroutineScope.launch {
                                     onPersistAllowedUrlState(currentUrl)
                                 }
                             }
                             if (view != null) {
-                                ReelsBlocker.inject(view)
+                                ReelsBlocker.inject(view, blockModeState.blocksReels)
                             }
                             publishState(
                                 webViewState.copy(
@@ -221,7 +226,7 @@ fun InstagramWebView(
 
                         override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
                             val currentUrl = url ?: view?.url
-                            if (currentUrl != null && InstagramUrlFilter.isBlockedInstagramUrl(currentUrl)) {
+                            if (currentUrl != null && blockModeState.blocksReels && InstagramUrlFilter.isBlockedInstagramUrl(currentUrl)) {
                                 handleBlockedNavigation(view, currentUrl)
                                 return
                             }
@@ -231,7 +236,7 @@ fun InstagramWebView(
                                 }
                             }
                             if (view != null) {
-                                ReelsBlocker.inject(view)
+                                ReelsBlocker.inject(view, blockModeState.blocksReels)
                             }
                             updateNavigationState(view, currentUrl)
                         }
@@ -345,13 +350,14 @@ private fun handleNavigation(
     view: WebView?,
     url: String,
     isMainFrame: Boolean,
+    blockMode: BlockMode,
     onBlockedNavigation: (String) -> Unit,
 ): Boolean {
     if (!isMainFrame) {
         return false
     }
 
-    if (InstagramUrlFilter.isBlockedInstagramUrl(url)) {
+    if (blockMode.blocksReels && InstagramUrlFilter.isBlockedInstagramUrl(url)) {
         onBlockedNavigation(url)
         if (view?.canGoBack() == true) {
             view.goBack()

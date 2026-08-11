@@ -3,10 +3,27 @@ package com.example.instagramwrapper
 import android.webkit.WebView
 
 object ReelsBlocker {
-    fun script(): String = """
+    fun script(blockReels: Boolean): String = """
         (function() {
           try {
+            window.__instagramWrapperBlockReelsEnabled = ${if (blockReels) "true" else "false"};
+            if (!window.__instagramWrapperBlockReelsEnabled && !window.__instagramWrapperReelsBlockerInstalled) {
+              return;
+            }
             if (window.__instagramWrapperReelsBlockerInstalled) {
+              if (!window.__instagramWrapperBlockReelsEnabled && document && document.querySelectorAll) {
+                var blockedNodes = document.querySelectorAll('[data-instagram-wrapper-blocked="reels"]');
+                for (var blockedIndex = 0; blockedIndex < blockedNodes.length; blockedIndex++) {
+                  var blockedNode = blockedNodes[blockedIndex];
+                  blockedNode.style.pointerEvents = '';
+                  blockedNode.style.display = '';
+                  blockedNode.removeAttribute('aria-hidden');
+                  delete blockedNode.dataset.instagramWrapperBlocked;
+                }
+              }
+              return;
+            }
+            if (!window.__instagramWrapperBlockReelsEnabled) {
               return;
             }
             window.__instagramWrapperReelsBlockerInstalled = true;
@@ -39,6 +56,9 @@ object ReelsBlocker {
             }
 
             function isReelsUrl(url) {
+              if (!window.__instagramWrapperBlockReelsEnabled) {
+                return false;
+              }
               if (!url || !isInstagramHost(url.host)) {
                 return false;
               }
@@ -152,7 +172,7 @@ object ReelsBlocker {
         })();
     """.trimIndent()
 
-    fun inject(webView: WebView) {
-        webView.evaluateJavascript(script(), null)
+    fun inject(webView: WebView, blockReels: Boolean) {
+        webView.evaluateJavascript(script(blockReels), null)
     }
 }

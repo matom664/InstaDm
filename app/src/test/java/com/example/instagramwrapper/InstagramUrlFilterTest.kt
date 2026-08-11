@@ -67,4 +67,12 @@ class InstagramUrlFilterTest {
                 "https://www.instagram.com/direct/"
         )
     }
+
+    @Test
+    fun `general instagram normalization allows reels while preserving https upgrade`() {
+        assertTrue(
+            InstagramUrlFilter.normalizeInstagramUrl("http://www.instagram.com/reels/ABC123/") ==
+                "https://www.instagram.com/reels/ABC123/"
+        )
+    }
 }

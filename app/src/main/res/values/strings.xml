@@ -10,6 +10,8 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_clear">Clear</string>
     <string name="action_clear_session">Clear session</string>
+    <string name="settings_blocking_normal">Blocking: Normal (default)</string>
+    <string name="settings_blocking_reels">Blocking: Reels only</string>
     <string name="settings_clear_cache">Clear cached Instagram data</string>
     <string name="settings_clear_session">Clear Instagram session</string>
     <string name="dialog_clear_cache_title">Clear cached data</string>

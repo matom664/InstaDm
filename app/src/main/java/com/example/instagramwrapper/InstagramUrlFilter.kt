@@ -25,9 +25,15 @@ object InstagramUrlFilter {
     }
 
     fun normalizeAllowedInstagramUrl(url: String?): String? {
+        val normalized = normalizeInstagramUrl(url) ?: return null
+        if (isBlockedInstagramUrl(normalized)) return null
+        return normalized
+    }
+
+    fun normalizeInstagramUrl(url: String?): String? {
         if (url.isNullOrBlank()) return null
         val uri = parseUri(url) ?: return null
-        if (!isInstagramUrl(url) || isBlockedInstagramUrl(url)) return null
+        if (!isInstagramUrl(url)) return null
 
         return if (uri.scheme.equals("http", ignoreCase = true)) {
             uri.buildUpon().scheme("https").build().toString()
