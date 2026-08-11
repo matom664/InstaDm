@@ -51,6 +51,7 @@ fun InstagramWebView(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScopeSafe()
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var lastLoadedUrl by remember { mutableStateOf<String?>(null) }
     var webViewState by remember {
         mutableStateOf(
             WebViewState(
@@ -300,6 +301,7 @@ fun InstagramWebView(
                     }
 
                     loadUrl(initialUrl)
+                    lastLoadedUrl = initialUrl
                 }
             },
             update = { view ->
@@ -315,6 +317,14 @@ fun InstagramWebView(
                 updateNavigationState(view)
             },
         )
+
+        LaunchedEffect(initialUrl, webView) {
+            val currentWebView = webView ?: return@LaunchedEffect
+            if (lastLoadedUrl != initialUrl) {
+                currentWebView.loadUrl(initialUrl)
+                lastLoadedUrl = initialUrl
+            }
+        }
 
         if (webViewState.isLoading) {
             LinearProgressIndicator(

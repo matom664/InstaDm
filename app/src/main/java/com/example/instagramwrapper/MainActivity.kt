@@ -67,9 +67,9 @@ private fun InstagramBrowserScreen() {
     val isOnline by connectivityMonitor.observeConnectivity().collectAsStateWithLifecycle(initialValue = true)
     val scope = rememberCoroutineScope()
 
-    val initialUrl by produceState<String?>(initialValue = null, repository) {
-        val lastViewed = repository.lastViewedStateFlow.first()
-        value = InstagramUrlFilter.normalizeAllowedInstagramUrl(lastViewed.url) ?: InstagramUrlFilter.defaultHomeUrl
+    val initialUrl by produceState(initialValue = InstagramUrlFilter.defaultHomeUrl, repository) {
+        val lastViewed = runCatching { repository.lastViewedStateFlow.first() }.getOrNull()
+        value = InstagramUrlFilter.normalizeAllowedInstagramUrl(lastViewed?.url) ?: InstagramUrlFilter.defaultHomeUrl
     }
 
     var webViewState by remember {
@@ -113,25 +113,21 @@ private fun InstagramBrowserScreen() {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            if (initialUrl == null) {
-                LoadingShell()
-            } else {
-                InstagramWebView(
-                    initialUrl = initialUrl!!,
-                    isOnline = isOnline,
-                    onStateChanged = { webViewState = it },
-                    onWebViewCreated = { createdWebView -> webView = createdWebView },
-                    onBlockedNavigation = {
-                        showSettingsMenu = false
-                    },
-                    onPersistAllowedUrl = { url ->
-                        scope.launch {
-                            repository.saveLastViewedUrl(url)
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            InstagramWebView(
+                initialUrl = initialUrl,
+                isOnline = isOnline,
+                onStateChanged = { webViewState = it },
+                onWebViewCreated = { createdWebView -> webView = createdWebView },
+                onBlockedNavigation = {
+                    showSettingsMenu = false
+                },
+                onPersistAllowedUrl = { url ->
+                    scope.launch {
+                        repository.saveLastViewedUrl(url)
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
 
             if (!isOnline && webViewState.pageLoaded) {
                 SmallStatusCard(
