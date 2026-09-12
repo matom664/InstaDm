@@ -65,9 +65,22 @@ object InstagramUrlFilter {
     private fun normalizedPathSegments(uri: Uri): List<String> {
         val encodedPath = uri.encodedPath ?: return emptyList()
         val decodedPath = runCatching { Uri.decode(encodedPath) }.getOrElse { encodedPath }
-        return decodedPath
+        val rawSegments = decodedPath
             .split('/')
             .filter { it.isNotBlank() }
             .map { it.trim().lowercase(Locale.US) }
+        if (rawSegments.isEmpty()) return emptyList()
+
+        val normalized = ArrayDeque<String>()
+        rawSegments.forEach { segment ->
+            when (segment) {
+                "." -> Unit
+                ".." -> if (normalized.isNotEmpty()) {
+                    normalized.removeLast()
+                }
+                else -> normalized.addLast(segment)
+            }
+        }
+        return normalized.toList()
     }
 }

@@ -7,7 +7,7 @@ This repository contains a production-oriented Android app written in Kotlin wit
 - Loads `https://www.instagram.com/` in a WebView.
 - Lets the user sign in through Instagram's own web UI.
 - Keeps Home, Direct, profiles, posts, stories, and Explore usable.
-- Includes a blocking mode menu with **Normal (default)** and **Block Reels**.
+- Enforces strict Reels blocking for `/reels`, `/reels/`, and `/reels/*`.
 - Persists the last successfully viewed allowed Instagram URL.
 - Restores cached content when offline if WebView has cached it.
 - Exposes simple privacy controls to clear cache or clear the Instagram session.
@@ -16,8 +16,8 @@ This repository contains a production-oriented Android app written in Kotlin wit
 
 - `MainActivity` hosts the Compose shell, back navigation, and settings actions.
 - `InstagramWebView` owns the stable WebView instance, its clients, cache mode, and pull-to-refresh.
-- `InstagramUrlFilter` centralizes Instagram URL validation and optional Reels blocking.
-- `ReelsBlocker` injects lightweight JavaScript for optional Reels blocking.
+- `InstagramUrlFilter` centralizes Instagram URL validation and strict Reels path blocking.
+- `ReelsBlocker` injects lightweight JavaScript for best-effort Reels DOM blocking reinforcement.
 - `ConnectivityMonitor` uses `ConnectivityManager.NetworkCallback` to drive online/offline state.
 - `LastViewedRepository` stores only the last allowed URL in DataStore Preferences.
 - `OfflineScreen` shows a best-effort offline/error state when WebView cannot render cached content.
@@ -35,26 +35,21 @@ The app uses:
 
 - `minSdk` 26
 - Kotlin 2.0.21
-- Android Gradle Plugin 8.7.3
+- Android Gradle Plugin 8.5.2
 - Jetpack Compose BOM 2024.12.01
 
 ## How authentication works
 
 Authentication happens entirely inside Instagram's own website in WebView. The app does not ask for credentials, read login forms, extract cookies, extract tokens, or use any Instagram private API. Session persistence comes from normal WebView cookie and storage behavior.
 
-## Blocking modes
+## Reels blocking architecture
 
-The settings menu provides these blocking modes:
-
-1. **Normal (default)**: no route or DOM blocking.
-2. **Block Reels**: enables Reels URL and DOM blocking.
-
-When **Block Reels** is selected, blocking has two layers:
+Reels blocking is always enabled and has two layers:
 
 1. Native URL filtering in `WebViewClient.shouldOverrideUrlLoading` and `doUpdateVisitedHistory`.
 2. Best-effort JavaScript injection that prevents clicks on Reels links, scans newly added DOM nodes, and wraps SPA history methods.
 
-This means direct navigations to `/reels`, `/reels/`, or `/reels/*` are blocked even if Instagram changes its client-side navigation behavior.
+This means direct navigations to `/reels`, `/reels/`, or `/reels/*` are blocked even if Instagram changes parts of its client-side navigation behavior.
 
 ## Offline caching
 
@@ -69,7 +64,7 @@ Offline behavior is best-effort only. The app does not create an offline Instagr
 - No cookie logging.
 - No message archiving.
 
-The settings menu provides blocking mode selection plus two explicit privacy actions:
+The settings menu provides two explicit privacy actions:
 
 - Clear cached Instagram data: clears WebView cache, history, and local storage, but not cookies.
 - Clear Instagram session: clears WebView cookies and session data so the user must sign in again.

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -69,7 +70,7 @@ private fun InstagramBrowserScreen() {
 
     val initialUrl by produceState(initialValue = InstagramUrlFilter.defaultHomeUrl, repository) {
         val lastViewed = runCatching { repository.lastViewedStateFlow.first() }.getOrNull()
-        value = InstagramUrlFilter.normalizeInstagramUrl(lastViewed?.url) ?: InstagramUrlFilter.defaultHomeUrl
+        value = InstagramUrlFilter.normalizeAllowedInstagramUrl(lastViewed?.url) ?: InstagramUrlFilter.defaultHomeUrl
     }
 
     var webViewState by remember {
@@ -88,7 +89,6 @@ private fun InstagramBrowserScreen() {
     var showSettingsMenu by remember { mutableStateOf(false) }
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearSessionDialog by remember { mutableStateOf(false) }
-    var blockMode by remember { mutableStateOf(BlockMode.NORMAL) }
 
     LaunchedEffect(isOnline) {
         webView?.settings?.cacheMode = if (isOnline) {
@@ -117,11 +117,10 @@ private fun InstagramBrowserScreen() {
             InstagramWebView(
                 initialUrl = initialUrl,
                 isOnline = isOnline,
-                blockMode = blockMode,
                 onStateChanged = { webViewState = it },
                 onWebViewCreated = { createdWebView -> webView = createdWebView },
                 onBlockedNavigation = {
-                    showSettingsMenu = false
+                    Toast.makeText(context, R.string.reels_blocked, Toast.LENGTH_SHORT).show()
                 },
                 onPersistAllowedUrl = { url ->
                     scope.launch {
@@ -181,22 +180,6 @@ private fun InstagramBrowserScreen() {
                 onDismissRequest = { showSettingsMenu = false },
                 properties = PopupProperties(focusable = true),
             ) {
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.settings_blocking_normal)) },
-                    onClick = {
-                        showSettingsMenu = false
-                        blockMode = BlockMode.NORMAL
-                        webView?.reload()
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.settings_blocking_reels)) },
-                    onClick = {
-                        showSettingsMenu = false
-                        blockMode = BlockMode.REELS
-                        webView?.reload()
-                    },
-                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.settings_clear_cache)) },
                     onClick = {
@@ -267,25 +250,6 @@ private fun InstagramBrowserScreen() {
                     properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun LoadingShell() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier.padding(24.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.loading_app),
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
-            )
         }
     }
 }
