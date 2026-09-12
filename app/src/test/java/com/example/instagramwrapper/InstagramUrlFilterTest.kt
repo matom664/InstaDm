@@ -50,12 +50,20 @@ class InstagramUrlFilterTest {
     fun `host case and scheme case are handled`() {
         assertTrue(InstagramUrlFilter.isInstagramUrl("HTTPS://WWW.INSTAGRAM.COM/direct/"))
         assertFalse(InstagramUrlFilter.isBlockedInstagramUrl("HTTPS://WWW.INSTAGRAM.COM/direct/"))
+        assertTrue(InstagramUrlFilter.isBlockedInstagramUrl("https://WWW.INSTAGRAM.COM/ReElS/ABC/?foo=bar#x"))
+    }
+
+    @Test
+    fun `query and fragment do not affect allowed paths`() {
+        assertTrue(InstagramUrlFilter.isInstagramUrl("https://www.instagram.com/direct/?next=/inbox#top"))
+        assertFalse(InstagramUrlFilter.isBlockedInstagramUrl("https://www.instagram.com/direct/?next=/inbox#top"))
     }
 
     @Test
     fun `non instagram and malformed urls are rejected`() {
         assertFalse(InstagramUrlFilter.isInstagramUrl("https://example.com/"))
         assertFalse(InstagramUrlFilter.isInstagramUrl("not a url"))
+        assertFalse(InstagramUrlFilter.isInstagramUrl("https://"))
         assertFalse(InstagramUrlFilter.isInstagramUrl("javascript:alert(1)"))
         assertFalse(InstagramUrlFilter.isBlockedInstagramUrl("https://example.com/reels"))
     }
@@ -74,5 +82,11 @@ class InstagramUrlFilterTest {
             InstagramUrlFilter.normalizeInstagramUrl("http://www.instagram.com/reels/ABC123/") ==
                 "https://www.instagram.com/reels/ABC123/"
         )
+    }
+
+    @Test
+    fun `path normalization resolves dot segments before reels decision`() {
+        assertFalse(InstagramUrlFilter.isBlockedInstagramUrl("https://www.instagram.com/reels/../direct/"))
+        assertTrue(InstagramUrlFilter.isBlockedInstagramUrl("https://www.instagram.com/direct/../reels/ABC/"))
     }
 }
